@@ -1,33 +1,24 @@
 {
-  description = "Nix Flake for Code Insider";
+  description = "NixOS configuration with VSCode Insiders";
+
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/master";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    vscode-insiders-flake.url = "path:/etc/nixos/vscode-unstable-flake/";
     flake-utils.url = "github:numtide/flake-utils";
   };
-  outputs = { self, nixpkgs, flake-utils }:
-    let
+
+  outputs = { self, nixpkgs, vscode-insiders-flake, flake-utils }: {
+    nixosConfigurations.asus-zenbook = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
-      pkgs = import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
-      meta = builtins.fromJSON (builtins.readFile ./meta.json);
-      package = (pkgs.vscode.override {
-        isInsiders = true;
-      }).overrideAttrs (oldAttrs: rec {
-        pname = "vscode-insiders";
-        src = (builtins.fetchurl {
-          url = meta.url;
-          sha256 = meta.sha256;
-        });
-        version = meta.version;
-      });
-    in
-    {
-      overlays.default = final: prev: {
-        vscode-insiders = package;
-      };
-      packages.${system}.vscode-insider = package;
-      legacyPackages.${system}.vscode-insider = package;
+      modules = [
+        ./hardware-configuration.nix
+        ./configuration.nix
+        {
+          environment.systemPackages = with nixpkgs.pkgs; [
+            vscode-insiders-flake.packages.x86_64-linux.vscode-insider
+          ];
+        }
+      ];
     };
+  };
 }
