@@ -64,6 +64,18 @@
     LC_TIME = "en_US.UTF-8";
   };
 
+  # Enable hyprland
+  programs.hyprland = {    
+    enable = true;    
+    xwayland.enable = true;    
+  }; 
+  environment.sessionVariables = {
+    # for invisible cursor fix
+    WLR_NO_HARDWARE_CURSORS = "1";
+    # Hint for electorn apps to use wayland
+    NIXOS_OZONE_WL = "1";
+  };
+
   # Enable wayland
   # programs.sway.enable = true;
 
@@ -81,22 +93,24 @@
     desktopManager = {
       gnome.enable = true;
     };
-    windowManager.awesome = {
-      enable = true;
-    };
     # Configure keymap in X11
     layout = "us";
     xkbVariant = "";
   };
 
+  # Exclude Gnome features / apps I don't use
   environment.gnome.excludePackages = (with pkgs; [
     gnome-photos
+    gnome.gnome-music
+    epiphany # web browswer
+    gnome.totem # video player
     gnome-tour
     gnome.gnome-terminal
     gnome-console
     gnome.gnome-weather
     gnome.gnome-contacts  
     gnome.gnome-maps
+    gnome.geary # mail client
   ]) ++ (with pkgs.gnome; [
     gedit
     # gnome-tweaks # didn't seem to work
@@ -131,10 +145,9 @@
     description = "matt";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
-      monero-gui
-      xmrig
+      # monero-gui
+      # xmrig
       irssi
-
     ];
   };
 
