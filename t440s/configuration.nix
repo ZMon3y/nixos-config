@@ -176,13 +176,13 @@
     wget
     curl
     unzip
-    pandoc
+    font-awesome
+    # pandoc
     fprintd
     virt-manager
     # gaming
     steam
     # work
-    # p3x-onenote
     bitwarden
     # azure-cli
     azuredatastudio
@@ -195,7 +195,7 @@
     signal-desktop
     discord
     # zoom-us
-    element-desktop
+    # element-desktop
     # dbeaver
     # Gnome
     gnomeExtensions.compiz-windows-effect

@@ -221,6 +221,7 @@
     pkgs.wget
     pkgs.curl
     pkgs.unzip
+    pkgs.font-awesome
     # pandoc
     # This was the old way?
     # android-tools
