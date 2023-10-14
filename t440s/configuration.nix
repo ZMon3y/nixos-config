@@ -170,6 +170,13 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+    # HYPRLAND REQUIREMENTS
+    kitty
+    dunst
+    waybar
+    libnotify
+    swww # wallpaper daemon
+    rofi-wayland #app launcher
     # browsers
     firefox
     microsoft-edge
