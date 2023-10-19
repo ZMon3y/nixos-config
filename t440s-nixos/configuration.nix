@@ -250,8 +250,9 @@
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 
-  # Garbage collection
   nix = {
+    settings.experimental-features = [ "nix-command" "flakes"];
+    # Garbage collection
     settings.auto-optimise-store = true;
     gc = {
       automatic = true;

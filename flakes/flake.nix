@@ -8,7 +8,7 @@
   };
 
   outputs = { self, nixpkgs, vscode-insiders-flake, flake-utils }: {
-    nixosConfigurations.asus-zenbook = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.workstation = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
         ./hardware-configuration.nix

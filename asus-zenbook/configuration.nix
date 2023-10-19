@@ -301,10 +301,10 @@
     options = [ "x-systemd.device-timeout=1ms" "nofail" "nfsvers=4.1"];
   };
 
-  # Garbage collection
   nix = {
-    settings.auto-optimise-store = true;
     settings.experimental-features = [ "nix-command" "flakes" ];
+    # Garbage collection
+    settings.auto-optimise-store = true;
     gc = {
       automatic = true;
       dates = "weekly";
