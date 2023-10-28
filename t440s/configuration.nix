@@ -7,24 +7,41 @@
 {
   imports =
     [ # Include the results of the hardware scan.
+      <nixos-hardware/lenovo/thinkpad/t440s>
       ./hardware-configuration.nix
     ];
 
   # Bootloader.
-  # boot.loader.timeout = 15;
-  #boot.loader.grub = {
-  #  enable = true;
-  #  useOSProber = true;
-  #  device = "nodev";
-  #  efiSupport = true;
-  #};
-  boot.loader.systemd-boot.enable = true;
+  boot.loader.timeout = 15;
+  boot.loader.grub = {
+    enable = true;
+    useOSProber = true;
+    device = "nodev";
+    efiSupport = true;
+  };
+  # boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.efi.efiSysMountPoint = "/boot/efi";
 
-  # boot.kernelPackages = pkgs.linuxPackages_latest;
+  
+  systemd.services.fix-mouse = {
+    description = "Fix mouse after suspend";
+    wantedBy = [ "suspend.target" ];
+    after = [ "suspend.target" ];
+    serviceConfig = {
+      User = "matt";
+      Type = "oneshot";
+      ExecStart = "${pkgs.bash}/bin/bash /home/matt/fixMouse.sh";
+    };
+  };
 
-  networking.hostName = "asus-zenbook"; # Define your hostname.
+
+  networking.hostName = "t440-nixos"; # Define your hostname.
+  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+
+  # Configure network proxy if necessary
+  # networking.proxy.default = "http://user:password@proxy:port/";
+  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Enable networking
   networking.networkmanager.enable = true;
@@ -47,15 +64,14 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  fonts.packages = with pkgs; [
-    open-sans
-  ];
+    fonts.packages = with pkgs; [
+      open-sans
+    ];
 
   # Enable hyprland
   programs.hyprland = {    
     enable = true;    
     xwayland.enable = true;    
-    enableNvidiaPatches = true; 
   }; 
   environment.sessionVariables = {
     # for invisible cursor fix
@@ -63,15 +79,17 @@
     # Hint for electorn apps to use wayland
     NIXOS_OZONE_WL = "1";
   };
-  # xdg.portal.enable = true;
-  # xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
+  # Enable wayland
+  # programs.sway.enable = true;
 
   # Enable the X11 windowing system.
   # Enable the GNOME Desktop Environment.
   services.xserver = {
     enable = true;
     displayManager = {
+      # For awesome
+      # sddm.enable = true;
       # for Gnome
       gdm.enable = true;
       gdm.wayland = true;
@@ -104,15 +122,8 @@
   
   # Enable CUPS to print documents.
   services.printing.enable = true;
-  services.avahi.enable = true;
-   # for a WiFi printer
-  services.avahi.openFirewall = true;
-  # for an USB printer
-  # services.ipp-usb.enable = true;
-
 
   # Enable sound with pipewire.
-  # If dual booting and sound isn't working disable fast-boot in Windows Power settings
   sound.enable = true;
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
@@ -132,20 +143,16 @@
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
-  # This and adbusers in extraGroups allows for adb to work
-  programs.adb.enable = true;
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.matt = {
     isNormalUser = true;
     description = "matt";
-    extraGroups = [ "networkmanager" "wheel" "adbusers"];
+    extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
       # monero-gui
       # xmrig
       irssi
-      ledger-live-desktop
     ];
-    openssh.authorizedKeys.keys = [ ];
   };
 
   virtualisation.libvirtd.enable = true;
@@ -153,13 +160,7 @@
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
 
-  programs.steam = {
-    enable = true;
-    remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
-    dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
-  };
-
-    # Enable automatic login for the user.
+  # Enable automatic login for the user.
   # services.xserver.displayManager.autoLogin.enable = true;
   # services.xserver.displayManager.autoLogin.user = "matt";
 
@@ -170,93 +171,59 @@
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-  services.xserver.videoDrivers = [ "nvidia" ];
-  hardware = {
-    opengl.enable = true;
-    nvidia = {
-      # Multi-monitor sync attempt:
-      modesetting.enable = true;
-      prime = {
-        sync.enable = true;
-        nvidiaBusId = "PCI:1:0:0";
-        intelBusId = "PCI:0:2:0";
-      };
-    };
-  };
-  
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = [
+  environment.systemPackages = with pkgs; [
     # HYPRLAND REQUIREMENTS
-    pkgs.kitty
-    pkgs.dunst
-    pkgs.waybar
-    pkgs.libnotify
-    pkgs.swww # wallpaper daemon
-    pkgs.rofi-wayland #app launcher
-    # BROWSERS
-    pkgs.firefox
-    pkgs.ungoogled-chromium
-    pkgs.microsoft-edge
-    # DEV
-    pkgs.vscode
-    pkgs.git
-    # UTILS
-    pkgs.nfs-utils
-    pkgs.cifs-utils
-    pkgs.ntfs3g
-    pkgs.neofetch
-    pkgs.zsh
-    pkgs.btop
-    pkgs.nethogs
-    pkgs.busybox
-    pkgs.nvtop
-    pkgs.bitwarden
-    pkgs.gparted
-    pkgs.anbox # TODO: Test to see if this can work for onenote
-    pkgs.remmina # https://gitlab.com/Remmina/Remmina/-/issues/1584
-    pkgs.p7zip
-    pkgs.hollywood
-    pkgs.tilix
-    pkgs.wget
-    pkgs.curl
-    pkgs.unzip
-    pkgs.font-awesome
+    kitty
+    dunst
+    waybar
+    libnotify
+    swww # wallpaper daemon
+    rofi-wayland #app launcher
+    # browsers
+    firefox
+    microsoft-edge
+    microsoft-edge-dev
+    # dev
+    vscode
+    git
+    # utils
+    nfs-utils
+    neofetch
+    zsh
+    btop
+    remmina
+    p7zip
+    hollywood
+    tilix
+    wget
+    curl
+    unzip
+    font-awesome
     # pandoc
-    # This was the old way?
-    # android-tools
-    # fprintd TODO: Move this to T440 specific
-    pkgs.virt-manager
+    fprintd
+    virt-manager
     # gaming
-    pkgs.steam
-    # WORK
-    # teams
-    # p3x-onenote
-    pkgs.azure-cli
-    pkgs.azuredatastudio
-    pkgs.drawio
-    pkgs.onedrive # TODO: check into safety
-    # MEDIA
-    pkgs.vlc
+    steam
+    # work
+    bitwarden
+    # azure-cli
+    azuredatastudio
+    drawio
+    # media
+    vlc
     # mplayer
     # chat
-    pkgs.signal-desktop
-    pkgs.discord
-    pkgs.zoom-us
+    # teams
+    signal-desktop
+    discord
+    # zoom-us
     # element-desktop
     # dbeaver
-    # GNOME
-    pkgs.gnomeExtensions.compiz-windows-effect
-    pkgs.gnomeExtensions.vitals
-    pkgs.gnomeExtensions.workspace-indicator
-    pkgs.gnomeExtensions.window-state-manager
-    pkgs.gnomeExtensions.extension-list
-    pkgs.gnomeExtensions.removable-drive-menu
-    pkgs.gnomeExtensions.hide-top-bar
-    pkgs.gnomeExtensions.emoji-selector
-    pkgs.gnomeExtensions.gsconnect # TODO: Not working
-    # gjs
-    # gnome3.gnome-tweaks
+    # Gnome
+    gnomeExtensions.compiz-windows-effect
+    gnome3.gnome-tweaks
   ];
   
   services.tailscale.enable = true;
@@ -270,10 +237,9 @@
   # };
 
   # List services that you want to enable:
-  # TODO: T440 specific
-  # services.fprintd = {
-  #   enable = true;
-  # };
+  services.fprintd = {
+    enable = true;
+  };
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
@@ -283,28 +249,10 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
-  networking.firewall = { 
-    enable = true;
-    checkReversePath = "loose";
-    allowedTCPPortRanges = [ 
-      { from = 1714; to = 1764; } # KDE Connect
-    ];  
-    allowedUDPPortRanges = [ 
-      { from = 1714; to = 1764; } # KDE Connect
-    ];  
-  }; 
-
-  # NFS NAS Mounting (nas-01)
-  fileSystems."/var/nas-01" = {
-    device = "nas-01.szafir.home:/volume1/MATT";
-    fsType = "nfs";
-    options = [ "x-systemd.device-timeout=1ms" "nofail" "nfsvers=4.1"];
-  };
 
   # Garbage collection
   nix = {
     settings.auto-optimise-store = true;
-    settings.experimental-features = [ "nix-command" "flakes" ];
     gc = {
       automatic = true;
       dates = "weekly";
