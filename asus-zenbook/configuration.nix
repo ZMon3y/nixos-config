@@ -22,6 +22,8 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.efi.efiSysMountPoint = "/boot/efi";
 
+  boot.kernelPackages = pkgs.linuxPackages_5_15;
+
   # boot.kernelPackages = pkgs.linuxPackages_latest;
 
   networking.hostName = "asus-zenbook"; # Define your hostname.
@@ -47,15 +49,11 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  fonts.packages = with pkgs; [
-    open-sans
-  ];
-
-  # Enable hyprland
+   # Enable hyprland
   programs.hyprland = {    
     enable = true;    
-    xwayland.enable = true;    
-    enableNvidiaPatches = true; 
+    # xwayland.enable = true;    
+    # enableNvidiaPatches = true; 
   }; 
   environment.sessionVariables = {
     # for invisible cursor fix
@@ -142,6 +140,7 @@
     packages = with pkgs; [
       # monero-gui
       # xmrig
+      open-sans
       irssi
       ledger-live-desktop
     ];
@@ -150,6 +149,8 @@
 
   virtualisation.libvirtd.enable = true;
   programs.dconf.enable = true;
+  programs.virt-manager.enable = true;
+
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
 
@@ -172,10 +173,28 @@
 
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware = {
-    opengl.enable = true;
+    opengl = {
+      enable = true;
+      driSupport = true;
+      driSupport32Bit = true;
+    };
     nvidia = {
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
       # Multi-monitor sync attempt:
       modesetting.enable = true;
+      # Use the NVidia open source kernel module (not to be confused with the
+      # independent third-party "nouveau" open source driver).
+      # Support is limited to the Turing and later architectures. Full list of 
+      # supported GPUs is at: 
+      # https://github.com/NVIDIA/open-gpu-kernel-modules#compatible-gpus 
+      # Only available from driver 515.43.04+
+      # Currently alpha-quality/buggy, so false is currently the recommended setting.
+      open = false;
+      # Enable the Nvidia settings menu,
+      # accessible via `nvidia-settings`.
+      nvidiaSettings = true;
+      # Optionally, you may need to select the appropriate driver version for your specific GPU.
+
       prime = {
         sync.enable = true;
         nvidiaBusId = "PCI:1:0:0";
@@ -194,6 +213,10 @@
     pkgs.libnotify
     pkgs.swww # wallpaper daemon
     pkgs.rofi-wayland #app launcher
+    # nvidia
+    # pkgs.nvidia-x11
+    # pkgs.nvidia-settings
+    # pkgs.nvidia-persistence
     # BROWSERS
     pkgs.firefox
     pkgs.ungoogled-chromium
@@ -226,7 +249,6 @@
     # This was the old way?
     # android-tools
     # fprintd TODO: Move this to T440 specific
-    pkgs.virt-manager
     # gaming
     pkgs.steam
     # WORK
@@ -296,7 +318,7 @@
 
   # NFS NAS Mounting (nas-01)
   fileSystems."/var/nas-01" = {
-    device = "nas-01.szafir.home:/volume1/MATT";
+    device = "nas-01.szafir.home:/volume1";
     fsType = "nfs";
     options = [ "x-systemd.device-timeout=1ms" "nofail" "nfsvers=4.1"];
   };
