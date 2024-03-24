@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports =
@@ -22,7 +22,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.efi.efiSysMountPoint = "/boot/efi";
 
-  boot.kernelPackages = pkgs.linuxPackages_5_15;
+  # boot.kernelPackages = pkgs.linuxPackages_5_15;
 
   # boot.kernelPackages = pkgs.linuxPackages_latest;
 
@@ -71,16 +71,25 @@
     enable = true;
     displayManager = {
       # for Gnome
-      gdm.enable = true;
-      gdm.wayland = true;
+      # gdm.enable = true;
+      # gdm.wayland = true;
+      sddm = {
+        enable = true;
+        wayland.enable = true;
+      };
     };
     desktopManager = {
       gnome.enable = true;
     };
     # Configure keymap in X11
-    layout = "us";
-    xkbVariant = "";
+    xkb.layout = "us";
+    xkb.variant = "";
   };
+  services.desktopManager.plasma6.enable = true;
+
+  
+  programs.ssh.askPassword = lib.mkForce "${pkgs.ksshaskpass}/bin/ksshaskpass";
+
 
   # Exclude Gnome features / apps I don't use
   environment.gnome.excludePackages = (with pkgs; [
@@ -89,15 +98,12 @@
     epiphany # web browswer
     gnome.totem # video player
     gnome-tour
-    gnome.gnome-terminal
+    # gnome.gnome-terminal
     gnome-console
     gnome.gnome-weather
     gnome.gnome-contacts  
     gnome.gnome-maps
     gnome.geary # mail client
-  ]) ++ (with pkgs.gnome; [
-    gedit
-    # gnome-tweaks # didn't seem to work
   ]);
   
   # Enable CUPS to print documents.
@@ -143,8 +149,10 @@
       open-sans
       irssi
       ledger-live-desktop
+      dbeaver
+      gnuradio
     ];
-    openssh.authorizedKeys.keys = [ ];
+    # openssh.authorizedKeys.keys = [ ];
   };
 
   virtualisation.libvirtd.enable = true;
@@ -205,82 +213,87 @@
   
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = [
+  environment.systemPackages = (with pkgs; [
     # HYPRLAND REQUIREMENTS
-    pkgs.kitty
-    pkgs.dunst
-    pkgs.waybar
-    pkgs.libnotify
-    pkgs.swww # wallpaper daemon
-    pkgs.rofi-wayland #app launcher
-    # nvidia
-    # pkgs.nvidia-x11
-    # pkgs.nvidia-settings
-    # pkgs.nvidia-persistence
+    kitty
+    dunst
+    waybar
+    libnotify
+    swww # wallpaper daemon
+    rofi-wayland #app launcher
     # BROWSERS
-    pkgs.firefox
-    pkgs.ungoogled-chromium
-    pkgs.microsoft-edge
+    firefox
+    ungoogled-chromium
+    microsoft-edge
     # DEV
-    pkgs.vscode
-    pkgs.git
+    vscode
+    git
     # UTILS
-    pkgs.nfs-utils
-    pkgs.cifs-utils
-    pkgs.ntfs3g
-    pkgs.neofetch
-    pkgs.zsh
-    pkgs.btop
-    pkgs.nethogs
-    pkgs.busybox
-    pkgs.nvtop
-    pkgs.bitwarden
-    pkgs.gparted
-    pkgs.anbox # TODO: Test to see if this can work for onenote
-    pkgs.remmina # https://gitlab.com/Remmina/Remmina/-/issues/1584
-    pkgs.p7zip
-    pkgs.hollywood
-    pkgs.tilix
-    pkgs.wget
-    pkgs.curl
-    pkgs.unzip
-    pkgs.font-awesome
+    gedit
+    nfs-utils
+    cifs-utils
+    ntfs3g
+    nmap
+    neofetch
+    tmux
+    btop
+    nethogs
+    pavucontrol # audio control
+    busybox
+    nvtop
+    bitwarden
+    gparted
+    anbox # TODO: Test to see if this can work for onenote
+    remmina # https://gitlab.com/Remmina/Remmina/-/issues/1584
+    p7zip
+    hollywood
+    tilix
+    wget
+    curl
+    unzip
+    font-awesome
+    variety # wallpaper changer
     # pandoc
     # This was the old way?
     # android-tools
     # fprintd TODO: Move this to T440 specific
     # gaming
-    pkgs.steam
+    steam
     # WORK
     # teams
     # p3x-onenote
-    pkgs.azure-cli
-    pkgs.azuredatastudio
-    pkgs.drawio
-    pkgs.onedrive # TODO: check into safety
+    azure-cli
+    azuredatastudio
+    drawio
+    onedrive # TODO: check into safety
     # MEDIA
-    pkgs.vlc
+    vlc
     # mplayer
     # chat
-    pkgs.signal-desktop
-    pkgs.discord
-    pkgs.zoom-us
+    signal-desktop
+    discord
+    zoom-us
     # element-desktop
     # dbeaver
     # GNOME
-    pkgs.gnomeExtensions.compiz-windows-effect
-    pkgs.gnomeExtensions.vitals
-    pkgs.gnomeExtensions.workspace-indicator
-    pkgs.gnomeExtensions.window-state-manager
-    pkgs.gnomeExtensions.extension-list
-    pkgs.gnomeExtensions.removable-drive-menu
-    pkgs.gnomeExtensions.hide-top-bar
-    pkgs.gnomeExtensions.emoji-selector
-    pkgs.gnomeExtensions.gsconnect # TODO: Not working
+    # gnome.gnome-tweaks
+    gnomeExtensions.compiz-windows-effect
+    # gnomeExtensions.vitals
+    gnomeExtensions.workspace-indicator
+    # gnomeExtensions.appindicator # Tried for variety but didn't work
+    gnomeExtensions.window-state-manager
+    gnomeExtensions.extension-list
+    gnomeExtensions.removable-drive-menu
+    # gnomeExtensions.hide-top-bar
+    gnomeExtensions.emoji-copy
+    gnomeExtensions.gsconnect 
     # gjs
     # gnome3.gnome-tweaks
-  ];
-  
+  ]);
+
+  # Required for gnomeExtensions.appindicator (and variety systray)
+  # services.udev.packages = with pkgs; [ gnome.gnome-settings-daemon ];
+
   services.tailscale.enable = true;
 
   # Some programs need SUID wrappers, can be configured further or are

@@ -1,0 +1,46 @@
+{
+    "sqltools.connections": [
+        {
+            "mssqlOptions": {
+                "appName": "SQLTools",
+                "useUTC": true,
+                "encrypt": true
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "driver": "MSSQL",
+            "name": "Bedrock_Dev",
+            "connectString": "Server=tcp:sqlserver-bedrock-01.database.windows.net,1433;Initial Catalog=Bedrock_Dev;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication=\"Active Directory Default\";"
+        },
+        {
+            "mssqlOptions": {
+                "appName": "SQLTools",
+                "useUTC": true,
+                "encrypt": true
+            },
+            "previewLimit": 50,
+            "server": "sqlserver-bedrock-01.database.windows.net",
+            "port": 1433,
+            "driver": "MSSQL",
+            "database": "Bedrock_Dev",
+            "username": "sqladmin",
+            "password": "2VRxDxqN3aQpzxtWaiLQ",
+            "name": "Bedrock_Dev"
+        },
+        {
+            "mssqlOptions": {
+                "appName": "SQLTools",
+                "useUTC": true,
+                "encrypt": true
+            },
+            "previewLimit": 50,
+            "server": "sqlserver-bedrock-01.database.windows.net",
+            "port": 1433,
+            "driver": "MSSQL",
+            "name": "Bedrock master",
+            "password": "2VRxDxqN3aQpzxtWaiLQ",
+            "username": "sqladmin",
+            "database": "master"
+        }
+    ]
+}
